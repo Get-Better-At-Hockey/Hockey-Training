@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>whackapuck</title>
+	<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.js"></script>
+	</head>
+	<body>
+		<script>
+			let holes = []
+let playerScore = 0
+let gameTimer = 30
+let isMoleVisible = false
+let lastMoleTime = 0
+// let state1 = 0
+
+function setup() {
+	createCanvas(windowWidth, windowHeight)
+	
+	//25 holes for 5x5 grid
+	for (let row = 0; row < 6; row++) {
+		for (let column = 0; column < 7; column++) {
+			let holeX = width / 5 + (column * 100)
+			let holeY = width / 5 + 40 + (row * 100)
+
+			//NEW HOLE OBJECT to holes array
+			let hole = {
+				x: holeX,
+				y: holeY,
+				hasMole: false, //init. has no mole
+			}
+			holes.push(hole) //holes is our array at the very top
+		}
+	}
+}
+
+// function draw1()	{
+// 		if (state1 == 1) {
+// 			perform();
+// 		}
+// 			if(state1 == 0 && key == 'b'){
+// 				state1 = 1;
+// 			}
+// 				if(state1 == 0)
+// 				{
+// 					qwerty();
+// 				}
+// 				else if(state1 == 1)
+// 				{
+// 					perform();
+// 				}    
+// }
+
+// function qwerty() {
+// 	background(255);
+// 	textSize (50);
+// 	fill(0);
+// 	text("Whack-a-Puck", width-220, 39);
+// 	fill(0);
+// 	textSize (25);
+// 	text("Press B to begin", width/2, 299);
+// 	text("Whack the pucks back into their holes", width/2-335, 15);
+// }
+
+function draw() {
+	background(220)
+
+	//draw all holes and moles
+	for (let hole of holes) {
+		fill('green')
+		ellipse(hole.x, hole.y, 85, 85)
+
+		//if hole = mole = true, draw mole
+		if (hole.hasMole) {
+			fill('black')
+			ellipse(hole.x, hole.y, 65, 65)
+		}
+	}
+
+	textStyle(BOLDITALIC)
+	textSize(38.5)
+	text("Whack-a-PUCK", width / 2 - 138, 40)
+
+	//score and timer
+	textSize(24)
+	fill(0)
+	text("Score: " + playerScore, 10, 30)
+	text("Time: " + gameTimer, width - 130, 30)
+
+//update timer with modulus operator
+//framecount is built in to p5.js
+
+	if (frameCount % 60 == 0 && gameTimer >= 0) {
+		gameTimer--
+	}
+
+	if (gameTimer < 0) {
+		background("grey")
+		textSize(75)
+		fill('red')
+		textFont('Lobster')
+		textAlign(CENTER, CENTER)
+		text("GAME OVER!", width / 2, height / 2 - 40)
+		textSize(40)
+		text("Your score is: " + playerScore, width / 2, height / 2 + 40)
+		noLoop() //stops the game loop
+	}
+
+	//make mole appear at random hole
+	let currentTime = millis()
+
+	// if no mole and over 1sec since last mole, make new mole appear
+	
+	if (!isMoleVisible && currentTime - lastMoleTime > 1000) {
+		let randomHole = random(holes)// chooses random hole
+		randomHole.hasMole = true
+		isMoleVisible = true
+		lastMoleTime = currentTime
+	}
+
+	// make mole dissapear after 2sec
+	// if mole is visible and over 2sec since last mole, make mole dissapear
+
+	if (isMoleVisible && currentTime - lastMoleTime > 2000) {
+		for (let hole of holes) {
+			hole.hasMole = false
+		}
+		isMoleVisible = false
+	}
+
+	if (playerScore >= 13) {
+		if (isMoleVisible && currentTime - lastMoleTime > 1000) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 23) {
+		if (isMoleVisible && currentTime - lastMoleTime > 700) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 26) {
+		if (isMoleVisible && currentTime - lastMoleTime > 500) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+}
+
+function mousePressed() {
+	//check if mouse is over a hole
+	for (let hole of holes) {
+		let distance = dist(mouseX, mouseY, hole.x, hole.y)
+
+		//if mouse is over hole, add 1 to playerScore
+		if (distance < 30 && hole.hasMole) {
+			playerScore++
+			hole.hasMole = false
+			isMoleVisible = false
+		}
+	}
+}
+		</script>
+	</body>
+</html>

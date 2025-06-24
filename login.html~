@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Login Page</title>
+		<style>
+			body {
+					font-family: Arial, sans-serif;
+					background-color: #f0f0f0;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					height: 100vh;
+					margin: 0;
+			}
+
+			.container {
+					background-color: #fff;
+					padding: 20px;
+					border-radius: 8px;
+					box-shadow: 0 0 10px rgba(0,0,0,0.1);
+					width: 300px;
+			}
+
+			.login-form {
+					max-width: 100%;
+			}
+
+			.form-group {
+					margin-bottom: 15px;
+			}
+
+			label {
+					display: block;
+					margin-bottom: 6px;
+			}
+
+			input[type="text"],
+			input[type="password"] {
+					width: calc(100% - 12px);
+					padding: 8px;
+					border: 1px solid #ccc;
+					border-radius: 4px;
+			}
+
+			button {
+					width: 100%;
+					padding: 10px;
+					background-color: #4CAF50;
+					color: white;
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+					font-size: 16px;
+			}
+
+			button:hover {
+					background-color: #45a049;
+			}
+
+			.error-message {
+					color: red;
+					font-size: 14px;
+					margin-top: 10px;
+			}
+
+			footer {
+				background-color: black;
+				color: #fff;
+				text-align: center;
+				padding: 1em 0;
+				position: sticky;
+				bottom: 0;
+				width: 100%;
+			}	
+		</style>
+</head>
+<body>
+		<div class="container">
+				<form id="loginForm" class="login-form">
+						<h2>Login</h2>
+						<div class="form-group">
+								<label for="username">Username</label>
+								<input type="text" id="username" name="username" required>
+						</div>
+						<div class="form-group">
+								<label for="password">Password</label>
+								<input type="password" id="password" name="password" required>
+						</div>
+						<button type="submit">Login</button>
+						<p id="error-msg" class="error-message"></p>
+				</form>
+		</div>
+
+		<script>
+			document.getElementById('loginForm').addEventListener('submit', function(event) {
+					event.preventDefault();
+
+					// Perform basic validation - you can add more complex checks as needed
+					var username = document.getElementById('username').value;
+					var password = document.getElementById('password').value;
+
+					if (username === 'admin' && password === 'password') {
+							// Successful login
+							alert('Login successful!');
+							window.location.href("protected.html")
+							// You can redirect to another page or perform other actions here
+					} else {
+							// Failed login
+							var errorMsg = document.getElementById('error-msg');
+							errorMsg.textContent = 'Invalid username or password. Please try again.';
+							document.getElementById('username').focus(); // Set focus back to username input
+					}
+			});
+		</script>
+		<footer>
+			<p>COPYRIGHT &copy; 2024 Hockey Training Academy. All rights reserved.</p>
+		</footer>
+</body>
+</html>

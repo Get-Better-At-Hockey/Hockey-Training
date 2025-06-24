@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Whack-a-PUCK EXTREME</title>
+	<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.js"></script>
+	</head>
+	<body>
+		<button id="button1">Start!</button>
+		<style>
+			#button1{ 
+				position: relative; 
+				left: width/2; 
+				top: height/2; 
+			} 
+		</style>
+		<script>
+let holes = []<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Whack-a-PUCK EXTREME</title>
+	<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.js"></script>
+	</head>
+	<body>
+		<style>
+			body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; font-family: Arial, sans-serif;}
+			canvas { display: block; }
+			.ui-overlay {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				text-align: center;
+				background-color: rgba(0, 0, 0, 0.7);
+				color: white;
+				z-index: 10;
+			}
+			.ui-overlay h1 { font-size: 48px; margin-bottom: 20px; color: #FFD700; }
+			.ui-overlay p { font-size: 20px; margin-bottom: 15px; line-height: 1.5; max-width: 80%;}
+			.ui-overlay button {
+				padding: 15px 30px;
+				font-size: 22px;
+				margin: 10px;
+				cursor: pointer;
+				border: none;
+				border-radius: 8px;
+				background-color: #4CAF50;
+				color: white;
+				transition: background-color 0.3s;
+				box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+			}
+			.ui-overlay button:hover { background-color: #45a049; }
+			.hidden { display: none !important; }
+
+			/* In-game UI elements (positioned by p5.js) */
+			.game-text {
+				font-family: 'Arial Black', Gadget, sans-serif; /* Example of a more game-like font */
+				text-shadow: 2px 2px 4px #333;
+			}
+
+		</style>
+		<!-- UI Overlays will be controlled by p5.js by adding/removing 'hidden' class -->
+		<div id="startScreenUI" class="ui-overlay"></div>
+		<div id="endScreenUI" class="ui-overlay hidden"></div>
+		<script>
+let holes = []
+let playerScore = 0
+let gameTimer = 30
+let isMoleVisible = false
+let lastMoleTime = 0
+let state1 = 0
+
+let startButton, playAgainButton, homeButton;
+
+function setup() {
+	createCanvas(windowWidth, windowHeight+100)
+	textAlign(CENTER, CENTER); // Set default text alignment
+	
+	//25 holes for 5x5 grid
+	for (let row = 0; row < 5; row++) {
+		for (let column = 0; column < 7; column++) {
+			let holeX = width / 3 - 50 + (column * 100)
+			let holeY = height / 4 + (row * 100)
+
+			//NEW HOLE OBJECT to holes array
+			let hole = {
+				x: holeX,
+				y: holeY,
+				hasMole: false, //init. has no mole
+			}
+			holes.push(hole) //holes is our array at the very top
+		}
+	}
+	setupUI();
+	showStartScreen();
+}
+
+function draw()	{
+	if (state1 === 0) {
+		// Start screen is handled by HTML overlay, p5 draw loop can be minimal or draw a static background
+		background(50, 50, 100); // A simple background for the start state
+	} else if (state1 === 1) {
+		gameLoop();
+	} else if (state1 === 2) {
+		// End screen is handled by HTML overlay
+		background(100, 50, 50); // A simple background for the end state
+	}
+}
+
+function setupUI() {
+	// Start Screen UI
+	const startScreenDiv = select('#startScreenUI');
+	let title = createElement('h1', 'Whack-a-PUCK EXTREME');
+	let instructions1 = createElement('p', 'Whack the pucks back into their holes!');
+	let instructions2 = createElement('p', 'Game is best played in FULLSCREEN. Press ENTER to toggle Fullscreen.');
+	let instructions3 = createElement('p', 'Press P to Pause, C to Continue.');
+	startButton = createButton('Start Game!');
+	startButton.mousePressed(startGame);
+	
+	title.parent(startScreenDiv);
+	instructions1.parent(startScreenDiv);
+	instructions2.parent(startScreenDiv);
+	instructions3.parent(startScreenDiv);
+	startButton.parent(startScreenDiv);
+
+	// End Screen UI
+	const endScreenDiv = select('#endScreenUI');
+	let gameOverTitle = createElement('h1', 'GAME OVER!');
+	let finalScoreText = createElement('p', 'Your Score: 0');
+	finalScoreText.id('finalScoreDisplay'); // To update it later
+	playAgainButton = createButton('Play Again');
+	homeButton = createButton('Go to Homepage');
+
+	playAgainButton.mousePressed(startGame); // startGame will reset and start
+	homeButton.mousePressed(() => { window.location.href = 'games.html'; }); // Or your main games page
+
+	gameOverTitle.parent(endScreenDiv);
+	finalScoreText.parent(endScreenDiv);
+	playAgainButton.parent(endScreenDiv);
+	homeButton.parent(endScreenDiv);
+}
+
+function showStartScreen() {
+	state1 = 0;
+	select('#startScreenUI').removeClass('hidden');
+	select('#endScreenUI').addClass('hidden');
+	noLoop(); // Pause p5 draw loop until game starts
+}
+
+function startGame() {
+	state1 = 1;
+	select('#startScreenUI').addClass('hidden');
+	select('#endScreenUI').addClass('hidden');
+	
+	// Reset game variables
+	playerScore = 0;
+	gameTimer = 30;
+	isMoleVisible = false;
+	lastMoleTime = 0;
+	for (let hole of holes) {
+		hole.hasMole = false;
+	}
+	loop(); // Resume p5 draw loop
+}
+
+function gameLoop() {
+	background(220)
+	
+	//draw all holes and moles
+	for (let hole of holes) {
+		fill('green')
+		ellipse(hole.x, hole.y, 85, 85)
+
+		//if hole = mole = true, draw mole
+		if (hole.hasMole) {
+			fill('black')
+			ellipse(hole.x, hole.y, 65, 65)
+		}
+	}
+
+	// Apply game-like style to in-game text
+	push(); // Save current drawing style
+	fill('black');
+	textSize(50);
+	textStyle(BOLDITALIC)
+	text("Whack-a-PUCK EXTREME", width / 2, 80);
+	
+	textSize(32);
+	fill('red');
+	text("Score: " + playerScore, 100, 60)
+	text("Time: " + gameTimer, width - 220, 60)
+
+//update timer with modulus operator
+//framecount is built in to p5.js
+
+	if (frameCount % 60 == 0 && gameTimer >= 0) {
+		gameTimer--
+	}
+
+	if (gameTimer < 0) {
+		state1 = 2; // Game over state
+		select('#finalScoreDisplay').html("Your Score: " + playerScore);
+		select('#endScreenUI').removeClass('hidden');
+		noLoop(); // Pause p5 draw loop
+		return; // Exit gameLoop
+	}
+
+	//make mole appear at random hole
+	let currentTime = millis()
+
+	// if no mole and over 1sec since last mole, make new mole appear
+	
+	if (!isMoleVisible && currentTime - lastMoleTime > 1000) {
+		let randomHole = random(holes)// chooses random hole
+		randomHole.hasMole = true
+		isMoleVisible = true
+		lastMoleTime = currentTime
+	}
+
+	// make mole dissapear after 2sec
+	// if mole is visible and over 2sec since last mole, make mole dissapear
+
+	if (isMoleVisible && currentTime - lastMoleTime > 1500) {
+		for (let hole of holes) {
+			hole.hasMole = false
+		}
+		isMoleVisible = false
+	}
+
+	if (playerScore >= 6) {
+		if (isMoleVisible && currentTime - lastMoleTime > 1000) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 10) {
+		if (isMoleVisible && currentTime - lastMoleTime > 800) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 15) {
+		if (isMoleVisible && currentTime - lastMoleTime > 600) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 18) {
+		if (isMoleVisible && currentTime - lastMoleTime > 450) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+	pop(); // Restore drawing style
+}
+
+function keyTyped(){
+	if (state1 !== 1) return; // Only allow pause/continue during gameplay
+
+	if (key === "p" || key === "P"){
+			noLoop()
+	}
+	if (key === "c" || key === "C"){
+			loop()
+	}
+}
+
+function mousePressed() {
+	//check if mouse is over a hole
+	for (let hole of holes) {
+		let distance = dist(mouseX, mouseY, hole.x, hole.y)
+
+		//if mouse is over hole, add 1 to playerScore
+		if (distance < 30 && hole.hasMole) {
+			playerScore++
+			hole.hasMole = false
+			isMoleVisible = false
+		}
+	}
+}
+
+
+document.addEventListener(
+		"keydown",
+		(e) => {
+				if (e.key === "Enter") {
+						toggleFullScreen();
+				}
+		},
+		false,
+);
+
+function toggleFullScreen() {
+		if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen();
+		} else if (document.exitFullscreen) {
+				document.exitFullscreen();
+		}
+}
+		</script>
+	</body>
+</html>
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Whack-a-PUCK EXTREME</title>
+	<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.js"></script>
+	</head>
+	<body>
+		<button id="button1">Start!</button>
+		<style>
+			#button1{ 
+				position: relative; 
+				left: width/2; 
+				top: height/2; 
+			} 
+		</style>
+		<script>
+let holes = []
+<html>
+	<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Whack-a-PUCK EXTREME</title>
+	<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.js"></script>
+	</head>
+	<body>
+		<style>
+			body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f0f0; font-family: Arial, sans-serif;}
+			canvas { display: block; }
+			.ui-overlay {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				text-align: center;
+				background-color: rgba(0, 0, 0, 0.7);
+				color: white;
+				z-index: 10;
+			}
+			.ui-overlay h1 { font-size: 48px; margin-bottom: 20px; color: #FFD700; }
+			.ui-overlay p { font-size: 20px; margin-bottom: 15px; line-height: 1.5; max-width: 80%;}
+			.ui-overlay button {
+				padding: 15px 30px;
+				font-size: 22px;
+				margin: 10px;
+				cursor: pointer;
+				border: none;
+				border-radius: 8px;
+				background-color: #4CAF50;
+				color: white;
+				transition: background-color 0.3s;
+				box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+			}
+			.ui-overlay button:hover { background-color: #45a049; }
+			.hidden { display: none !important; }
+
+			/* In-game UI elements (positioned by p5.js) */
+			.game-text {
+				font-family: 'Arial Black', Gadget, sans-serif; /* Example of a more game-like font */
+				text-shadow: 2px 2px 4px #333;
+			}
+
+		</style>
+		<!-- UI Overlays will be controlled by p5.js by adding/removing 'hidden' class -->
+		<div id="startScreenUI" class="ui-overlay"></div>
+		<div id="endScreenUI" class="ui-overlay hidden"></div>
+		<script>
+let holes = []
+let playerScore = 0
+let gameTimer = 30
+let isMoleVisible = false
+let lastMoleTime = 0
+let state1 = 0
+
+let startButton, playAgainButton, homeButton;
+
+function setup() {
+	createCanvas(windowWidth, windowHeight+100)
+	textAlign(CENTER, CENTER); // Set default text alignment
+	
+	//25 holes for 5x5 grid
+	for (let row = 0; row < 5; row++) {
+		for (let column = 0; column < 7; column++) {
+			let holeX = width / 3 - 50 + (column * 100)
+			let holeY = height / 4 + (row * 100)
+
+			//NEW HOLE OBJECT to holes array
+			let hole = {
+				x: holeX,
+				y: holeY,
+				hasMole: false, //init. has no mole
+			}
+			holes.push(hole) //holes is our array at the very top
+		}
+	}
+	setupUI();
+	showStartScreen();
+}
+
+function draw()	{
+	if (state1 === 0) {
+		// Start screen is handled by HTML overlay, p5 draw loop can be minimal or draw a static background
+		background(50, 50, 100); // A simple background for the start state
+	} else if (state1 === 1) {
+		gameLoop();
+	} else if (state1 === 2) {
+		// End screen is handled by HTML overlay
+		background(100, 50, 50); // A simple background for the end state
+	}
+}
+
+function setupUI() {
+	// Start Screen UI
+	const startScreenDiv = select('#startScreenUI');
+	let title = createElement('h1', 'Whack-a-PUCK EXTREME');
+	let instructions1 = createElement('p', 'Whack the pucks back into their holes!');
+	let instructions2 = createElement('p', 'Game is best played in FULLSCREEN. Press ENTER to toggle Fullscreen.');
+	let instructions3 = createElement('p', 'Press P to Pause, C to Continue.');
+	startButton = createButton('Start Game!');
+	startButton.mousePressed(startGame);
+	
+	title.parent(startScreenDiv);
+	instructions1.parent(startScreenDiv);
+	instructions2.parent(startScreenDiv);
+	instructions3.parent(startScreenDiv);
+	startButton.parent(startScreenDiv);
+
+	// End Screen UI
+	const endScreenDiv = select('#endScreenUI');
+	let gameOverTitle = createElement('h1', 'GAME OVER!');
+	let finalScoreText = createElement('p', 'Your Score: 0');
+	finalScoreText.id('finalScoreDisplay'); // To update it later
+	playAgainButton = createButton('Play Again');
+	homeButton = createButton('Go to Homepage');
+
+	playAgainButton.mousePressed(startGame); // startGame will reset and start
+	homeButton.mousePressed(() => { window.location.href = 'games.html'; }); // Or your main games page
+
+	gameOverTitle.parent(endScreenDiv);
+	finalScoreText.parent(endScreenDiv);
+	playAgainButton.parent(endScreenDiv);
+	homeButton.parent(endScreenDiv);
+}
+
+function showStartScreen() {
+	state1 = 0;
+	select('#startScreenUI').removeClass('hidden');
+	select('#endScreenUI').addClass('hidden');
+	noLoop(); // Pause p5 draw loop until game starts
+}
+
+function startGame() {
+	state1 = 1;
+	select('#startScreenUI').addClass('hidden');
+	select('#endScreenUI').addClass('hidden');
+	
+	// Reset game variables
+	playerScore = 0;
+	gameTimer = 30;
+	isMoleVisible = false;
+	lastMoleTime = 0;
+	for (let hole of holes) {
+		hole.hasMole = false;
+	}
+	loop(); // Resume p5 draw loop
+}
+
+function gameLoop() {
+	background(220)
+	
+	//draw all holes and moles
+	for (let hole of holes) {
+		fill('green')
+		ellipse(hole.x, hole.y, 85, 85)
+
+		//if hole = mole = true, draw mole
+		if (hole.hasMole) {
+			fill('black')
+			ellipse(hole.x, hole.y, 65, 65)
+		}
+	}
+
+	// Apply game-like style to in-game text
+	push(); // Save current drawing style
+	fill('black');
+	textSize(50);
+	textStyle(BOLDITALIC)
+	text("Whack-a-PUCK EXTREME", width / 2, 80);
+	
+	textSize(32);
+	fill('red');
+	text("Score: " + playerScore, 100, 60)
+	text("Time: " + gameTimer, width - 220, 60)
+
+//update timer with modulus operator
+//framecount is built in to p5.js
+
+	if (frameCount % 60 == 0 && gameTimer >= 0) {
+		gameTimer--
+	}
+
+	if (gameTimer < 0) {
+		state1 = 2; // Game over state
+		select('#finalScoreDisplay').html("Your Score: " + playerScore);
+		select('#endScreenUI').removeClass('hidden');
+		noLoop(); // Pause p5 draw loop
+		return; // Exit gameLoop
+	}
+
+	//make mole appear at random hole
+	let currentTime = millis()
+
+	// if no mole and over 1sec since last mole, make new mole appear
+	
+	if (!isMoleVisible && currentTime - lastMoleTime > 1000) {
+		let randomHole = random(holes)// chooses random hole
+		randomHole.hasMole = true
+		isMoleVisible = true
+		lastMoleTime = currentTime
+	}
+
+	// make mole dissapear after 2sec
+	// if mole is visible and over 2sec since last mole, make mole dissapear
+
+	if (isMoleVisible && currentTime - lastMoleTime > 1500) {
+		for (let hole of holes) {
+			hole.hasMole = false
+		}
+		isMoleVisible = false
+	}
+
+	if (playerScore >= 6) {
+		if (isMoleVisible && currentTime - lastMoleTime > 1000) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 10) {
+		if (isMoleVisible && currentTime - lastMoleTime > 800) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 15) {
+		if (isMoleVisible && currentTime - lastMoleTime > 600) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 18) {
+		if (isMoleVisible && currentTime - lastMoleTime > 450) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+	pop(); // Restore drawing style
+}
+
+function keyTyped(){
+	if (state1 !== 1) return; // Only allow pause/continue during gameplay
+
+	if (key === "p" || key === "P"){
+			noLoop()
+	}
+	if (key === "c" || key === "C"){
+			loop()
+	}
+}
+
+function mousePressed() {
+	//check if mouse is over a hole
+	for (let hole of holes) {
+		let distance = dist(mouseX, mouseY, hole.x, hole.y)
+
+		//if mouse is over hole, add 1 to playerScore
+		if (distance < 30 && hole.hasMole) {
+			playerScore++
+			hole.hasMole = false
+			isMoleVisible = false
+		}
+	}
+}
+
+
+document.addEventListener(
+		"keydown",
+		(e) => {
+				if (e.key === "Enter") {
+						toggleFullScreen();
+				}
+		},
+		false,
+);
+
+function toggleFullScreen() {
+		if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen();
+		} else if (document.exitFullscreen) {
+				document.exitFullscreen();
+		}
+}
+
+let playerScore = 0
+let gameTimer = 30
+let isMoleVisible = false
+let lastMoleTime = 0
+let state1 = 0
+let thng = 0
+
+function setup() {
+	createCanvas(windowWidth, windowHeight+100)
+	
+	//25 holes for 5x5 grid
+	for (let row = 0; row < 5; row++) {
+		for (let column = 0; column < 7; column++) {
+			let holeX = width / 3 - 50 + (column * 100)
+			let holeY = height / 4 + (row * 100)
+
+			//NEW HOLE OBJECT to holes array
+			let hole = {
+				x: holeX,
+				y: holeY,
+				hasMole: false, //init. has no mole
+			}
+			holes.push(hole) //holes is our array at the very top
+		}
+	}
+}
+
+function draw()	{
+		if (state1 == 1) {
+			hello();
+		}
+			
+			if(state1 == 1 && key === "r"){
+				console.log(0)
+				state = 0
+			}
+
+	
+			if(state1 == 0 && key === 'b'){
+				state1 = 1;
+			}
+			if(state1 == 0)
+			{
+				startUp();
+			} else if(state1 == 1)
+			{
+				hello();				
+			}    
+}
+
+ function startUp() { 	
+	background(255);
+	textSize (50);
+	fill(0);
+	text("Whack-a-Puck EXTREME", width-220, 39);
+	text("Game MUST be played in FULLSCREEN, Press ENTER to enter Fullscreen", width/2, 50)
+	fill(0);
+	textSize (25);
+	text("Press B to begin", width/2, 299);
+	text("Whack the pucks back into their holes", width/2-335, 15);
+	text("Press P to pause the game", width/2-335, 15);
+	text("Press C to resume the game", width/2-335, 15);
+	if (key==="b"){
+		console.log(2)
+		hello()
+	}
+
+	if (thng=0){
+		const newButton = document.createElement('button');
+		newButton.textContent = 'Start!';
+		document.body.appendChild(newButton);
+
+		newButton.addEventListener('click', () => {
+			hello()	
+		});
+		thng+=1
+	}
+ }
+
+function hello() {
+	if (key==="r"){
+		startUp()
+		holes = []
+		playerScore = 0
+		gameTimer = 30
+		isMoleVisible = false
+		lastMoleTime = 0
+	}
+
+	background(220)
+	
+	//draw all holes and moles
+	for (let hole of holes) {
+		fill('green')
+		ellipse(hole.x, hole.y, 85, 85)
+
+		//if hole = mole = true, draw mole
+		if (hole.hasMole) {
+			fill('black')
+			ellipse(hole.x, hole.y, 65, 65)
+		}
+	}
+
+	textStyle(BOLDITALIC)
+	textSize(65)
+	fill('black')
+	text("Whack-a-PUCK EXTREME", width / 4 - 40, 80)
+
+	//score and timer
+	textSize(24)
+	fill('red')
+	text("Score: " + playerScore, 100, 60)
+	text("Time: " + gameTimer, width - 220, 60)
+
+//update timer with modulus operator
+//framecount is built in to p5.js
+
+	if (frameCount % 60 == 0 && gameTimer >= 0) {
+		gameTimer--
+	}
+
+	if (gameTimer < 0) {
+		background("grey")
+		textSize(75)
+		fill('red')
+		textFont('Lobster')
+		textAlign(CENTER, CENTER)
+		text("GAME OVER!", width / 2, height / 2 - 40)
+		textSize(40)
+		text("Your score is: " + playerScore, width / 2, height / 2 + 40)
+		text("Please reload to play again", width / 2, height / 2 + 100)
+		text("Press Enter to exit Fullscreen", width / 2, height / 2 + 150)
+		//text("Press R to return to the home page", width / 2, height / 2 + 60)
+		//text("Press A to play again", width / 2, height / 2 +100)
+		if (key==="r"){
+			startUp()
+			holes = []
+			playerScore = 0
+			gameTimer = 30
+			isMoleVisible = false
+			lastMoleTime = 0
+
+		}
+
+	}
+
+	//make mole appear at random hole
+	let currentTime = millis()
+
+	// if no mole and over 1sec since last mole, make new mole appear
+	
+	if (!isMoleVisible && currentTime - lastMoleTime > 1000) {
+		let randomHole = random(holes)// chooses random hole
+		randomHole.hasMole = true
+		isMoleVisible = true
+		lastMoleTime = currentTime
+	}
+
+	// make mole dissapear after 2sec
+	// if mole is visible and over 2sec since last mole, make mole dissapear
+
+	if (isMoleVisible && currentTime - lastMoleTime > 1500) {
+		for (let hole of holes) {
+			hole.hasMole = false
+		}
+		isMoleVisible = false
+	}
+
+	if (playerScore >= 6) {
+		if (isMoleVisible && currentTime - lastMoleTime > 1000) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 10) {
+		if (isMoleVisible && currentTime - lastMoleTime > 800) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 15) {
+		if (isMoleVisible && currentTime - lastMoleTime > 600) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 18) {
+		if (isMoleVisible && currentTime - lastMoleTime > 450) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+
+	document.addEventListener('keydown', (event) => {
+		if (key == 'r') {
+			setTimeout(function() {
+			location.reload();
+			}, 1); 
+		}
+	});
+}
+
+function keyTyped(){
+	if (key === "p"){
+			noLoop()
+	}
+	if (key === "c"){
+			loop()
+	}
+}
+
+function mousePressed() {
+	//check if mouse is over a hole
+	for (let hole of holes) {
+		let distance = dist(mouseX, mouseY, hole.x, hole.y)
+
+		//if mouse is over hole, add 1 to playerScore
+		if (distance < 30 && hole.hasMole) {
+			playerScore++
+			hole.hasMole = false
+			isMoleVisible = false
+		}
+	}
+}
+
+document.addEventListener(
+		"keydown",
+		(e) => {
+				if (e.key === "Enter") {
+						toggleFullScreen();
+				}
+		},
+		false,
+);
+
+function toggleFullScreen() {
+		if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen();
+		} else if (document.exitFullscreen) {
+				document.exitFullscreen();
+		}
+}
+
+		</script>
+	</body>
+</html>
+
+let playerScore = 0
+let gameTimer = 30
+let isMoleVisible = false
+let lastMoleTime = 0
+let state1 = 0
+let thng = 0
+
+function setup() {
+	createCanvas(windowWidth, windowHeight+100)
+	
+	//25 holes for 5x5 grid
+	for (let row = 0; row < 5; row++) {
+		for (let column = 0; column < 7; column++) {
+			let holeX = width / 3 - 50 + (column * 100)
+			let holeY = height / 4 + (row * 100)
+
+			//NEW HOLE OBJECT to holes array
+			let hole = {
+				x: holeX,
+				y: holeY,
+				hasMole: false, //init. has no mole
+			}
+			holes.push(hole) //holes is our array at the very top
+		}
+	}
+}
+
+function draw()	{
+		if (state1 == 1) {
+			hello();
+		}
+			
+			if(state1 == 1 && key === "r"){
+				console.log(0)
+				state = 0
+			}
+
+	
+			if(state1 == 0 && key === 'b'){
+				state1 = 1;
+			}
+			if(state1 == 0)
+			{
+				startUp();
+			} else if(state1 == 1)
+			{
+				hello();				
+			}    
+}
+
+ function startUp() { 	
+	background(255);
+ 	textSize (50);
+ 	fill(0);
+ 	text("Whack-a-Puck EXTREME", width-220, 39);
+	text("Game MUST be played in FULLSCREEN, Press ENTER to enter Fullscreen", width/2, 50)
+ 	fill(0);
+ 	textSize (25);
+ 	text("Press B to begin", width/2, 299);
+ 	text("Whack the pucks back into their holes", width/2-335, 15);
+	text("Press P to pause the game", width/2-335, 15);
+	text("Press C to resume the game", width/2-335, 15);
+	if (key==="b"){
+		console.log(2)
+		hello()
+	}
+
+	if (thng=0){
+		const newButton = document.createElement('button');
+		newButton.textContent = 'Start!';
+		document.body.appendChild(newButton);
+
+		newButton.addEventListener('click', () => {
+			hello()	
+		});
+		thng+=1
+	}
+ }
+
+function hello() {
+	if (key==="r"){
+	 	startUp()
+		holes = []
+		playerScore = 0
+		gameTimer = 30
+		isMoleVisible = false
+		lastMoleTime = 0
+	}
+
+	background(220)
+	
+	//draw all holes and moles
+	for (let hole of holes) {
+		fill('green')
+		ellipse(hole.x, hole.y, 85, 85)
+
+		//if hole = mole = true, draw mole
+		if (hole.hasMole) {
+			fill('black')
+			ellipse(hole.x, hole.y, 65, 65)
+		}
+	}
+
+	textStyle(BOLDITALIC)
+	textSize(65)
+	fill('black')
+	text("Whack-a-PUCK EXTREME", width / 4 - 40, 80)
+
+	//score and timer
+	textSize(24)
+	fill('red')
+	text("Score: " + playerScore, 100, 60)
+	text("Time: " + gameTimer, width - 220, 60)
+
+//update timer with modulus operator
+//framecount is built in to p5.js
+
+	if (frameCount % 60 == 0 && gameTimer >= 0) {
+		gameTimer--
+	}
+
+	if (gameTimer < 0) {
+		background("grey")
+		textSize(75)
+		fill('red')
+		textFont('Lobster')
+		textAlign(CENTER, CENTER)
+		text("GAME OVER!", width / 2, height / 2 - 40)
+		textSize(40)
+		text("Your score is: " + playerScore, width / 2, height / 2 + 40)
+	 	text("Please reload to play again", width / 2, height / 2 + 100)
+	 	text("Press Enter to exit Fullscreen", width / 2, height / 2 + 150)
+		//text("Press R to return to the home page", width / 2, height / 2 + 60)
+		//text("Press A to play again", width / 2, height / 2 +100)
+		if (key==="r"){
+			startUp()
+	 		holes = []
+			playerScore = 0
+			gameTimer = 30
+			isMoleVisible = false
+			lastMoleTime = 0
+
+		}
+
+	}
+
+	//make mole appear at random hole
+	let currentTime = millis()
+
+	// if no mole and over 1sec since last mole, make new mole appear
+	
+	if (!isMoleVisible && currentTime - lastMoleTime > 1000) {
+		let randomHole = random(holes)// chooses random hole
+		randomHole.hasMole = true
+		isMoleVisible = true
+		lastMoleTime = currentTime
+	}
+
+	// make mole dissapear after 2sec
+	// if mole is visible and over 2sec since last mole, make mole dissapear
+
+	if (isMoleVisible && currentTime - lastMoleTime > 1500) {
+		for (let hole of holes) {
+			hole.hasMole = false
+		}
+		isMoleVisible = false
+	}
+
+	if (playerScore >= 6) {
+		if (isMoleVisible && currentTime - lastMoleTime > 1000) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 10) {
+		if (isMoleVisible && currentTime - lastMoleTime > 800) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 15) {
+		if (isMoleVisible && currentTime - lastMoleTime > 600) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+	if (playerScore >= 18) {
+		if (isMoleVisible && currentTime - lastMoleTime > 450) {
+			for (let hole of holes) {
+				hole.hasMole = false
+			}
+			isMoleVisible = false
+		}
+	}
+
+
+	document.addEventListener('keydown', (event) => {
+		if (key == 'r') {
+			setTimeout(function() {
+			location.reload();
+			}, 1); 
+		}
+	});
+}
+
+function keyTyped(){
+	if (key === "p"){
+			noLoop()
+	}
+	if (key === "c"){
+			loop()
+	}
+}
+
+function mousePressed() {
+	//check if mouse is over a hole
+	for (let hole of holes) {
+		let distance = dist(mouseX, mouseY, hole.x, hole.y)
+
+		//if mouse is over hole, add 1 to playerScore
+		if (distance < 30 && hole.hasMole) {
+			playerScore++
+			hole.hasMole = false
+			isMoleVisible = false
+		}
+	}
+}
+
+document.addEventListener(
+		"keydown",
+		(e) => {
+				if (e.key === "Enter") {
+						toggleFullScreen();
+				}
+		},
+		false,
+);
+
+function toggleFullScreen() {
+		if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen();
+		} else if (document.exitFullscreen) {
+				document.exitFullscreen();
+		}
+}
+		</script>
+	</body>
+</html>

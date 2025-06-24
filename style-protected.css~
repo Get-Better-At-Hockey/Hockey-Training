@@ -1,0 +1,385 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+/* width */
+::-webkit-scrollbar {
+  width: 20px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+*{
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+		font-family: 'Poppins',sans-serif;
+}
+::selection{
+		color: #000;
+		background: #fff;
+}
+nav{
+		position: relative;
+		background: #1b1b1b;
+		width: 100%;
+		padding: 10px 0;
+		z-index: 12;
+}
+nav .menu{
+		max-width: 1250px;
+		margin: auto;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 20px;
+}
+.menu .logo a{
+		text-decoration: none;
+		color: #fff;
+		font-size: 35px;
+		font-weight: 600;
+}
+.menu ul{
+		display: inline-flex;
+}
+.menu ul li{
+		list-style: none;
+		margin-left: 7px;
+}
+.menu ul li:first-child{
+		margin-left: 0px;
+}
+.menu ul li a{
+		text-decoration: none;
+		color: #fff;
+		font-size: 18px;
+		font-weight: 500;
+		padding: 8px 15px;
+		border-radius: 5px;
+		transition: all 0.3s ease;
+}
+.menu ul li a:hover{
+		background: #fff;
+		color: black;
+}
+.img{
+		background: url('https://hockeyshot.com/cdn/shop/articles/hockeyshot-dryland-all-star-tiles-product-breakdown-thumb_600x600_crop_center.jpg?v=1610405707')no-repeat;
+		width: 100%;
+		height: 100vh;
+		background-size: cover;
+		background-position: center;
+		position: relative;
+}
+.img::before{
+		content: '';
+		position: absolute;
+		height: 100%;
+		width: 100%;
+		background: rgba(0, 0, 0, 0.4);
+}
+.center{
+		position: absolute;
+		top: 52%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 100%;
+		padding: 0 20px;
+		text-align: center;
+}
+.center .title{
+		color: #fff;
+		font-size: 55px;
+		font-weight: 600;
+}
+.center .sub_title{
+		color: #fff;
+		font-size: 52px;
+		font-weight: 600;
+}
+.center .btns{
+		margin-top: 20px;
+}
+.center .btns button{
+		height: 55px;
+		width: 170px;
+		border-radius: 5px;
+		border: none;
+		margin: 0 10px;
+		border: 2px solid white;
+		font-size: 20px;
+		font-weight: 500;
+		padding: 0 10px;
+		cursor: pointer;
+		outline: none;
+		transition: all 0.3s ease;
+}
+.center .btns button:first-child{
+		color: black;
+		background: none;
+}
+.btns button:first-child:hover{
+		background: white;
+		color: black;
+}
+.center .btns button:last-child{
+		color: black;
+		background: none;
+}
+.center .btns button:last-child:hover{
+		background: white;
+		color: black;
+}
+
+<img src="hockeytraining2-removebg-preview.png" style="position:absolute; top:75px; left:100px;"/>
+img {
+  border-radius: 100%;
+}
+
+#image {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+}
+.navbar .login-btn {
+    border: none;
+    outline: none;
+    background: #fff;
+    color: #275360;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.navbar .login-btn:hover {
+    background: #ddd;
+}
+
+.form-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 10;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    max-width: 720px;
+    background: #fff;
+    border: 2px solid #fff;
+    transform: translate(-50%, -70%);
+}
+
+.show-popup .form-popup {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s ease, opacity 0.1s;
+}
+
+.form-popup .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: #878484;
+    cursor: pointer;
+}
+
+.blur-bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: 0.1s ease;
+}
+
+.show-popup .blur-bg-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.form-popup .form-box {
+    display: flex;
+}
+
+.form-box .form-details {
+    width: 100%;
+    color: #fff;
+    max-width: 330px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login .form-details {
+    padding: 0 40px;
+    background: url("images/login-img.jpg");
+    background-position: center;
+    background-size: cover;
+}
+
+.signup .form-details {
+    padding: 0 20px;
+    background: url("images/signup-img.jpg");
+    background-position: center;
+    background-size: cover;
+}
+
+.form-box .form-content {
+    width: 100%;
+    padding: 35px;
+}
+
+.form-box h2 {
+    text-align: center;
+    margin-bottom: 29px;
+}
+
+form .input-field {
+    position: relative;
+    height: 50px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.input-field input {
+    height: 100%;
+    width: 100%;
+    background: none;
+    outline: none;
+    font-size: 0.95rem;
+    padding: 0 15px;
+    border: 1px solid #717171;
+    border-radius: 3px;
+}
+
+.input-field input:focus {
+    border: 1px solid #00bcd4;
+}
+
+.input-field label {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #4a4646;
+    pointer-events: none;
+    transition: 0.2s ease;
+}
+
+.input-field input:is(:focus, :valid) {
+    padding: 16px 15px 0;
+}
+
+.input-field input:is(:focus, :valid)~label {
+    transform: translateY(-120%);
+    color: #00bcd4;
+    font-size: 0.75rem;
+}
+
+.form-box a {
+    color: #00bcd4;
+    text-decoration: none;
+}
+
+.form-box a:hover {
+    text-decoration: underline;
+}
+
+form :where(.forgot-pass-link, .policy-text) {
+    display: inline-flex;
+    margin-top: 13px;
+    font-size: 0.95rem;
+}
+
+form button {
+    width: 100%;
+    color: #fff;
+    border: none;
+    outline: none;
+    padding: 14px 0;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 3px;
+    cursor: pointer;
+    margin: 25px 0;
+    background: #00bcd4;
+    transition: 0.2s ease;
+}
+
+form button:hover {
+    background: #0097a7;
+}
+
+#subscribe:hover {
+    background: #0097a7;
+}
+
+#learn-more:hover {
+    background: #0097a7;
+}
+
+
+.form-content .bottom-link {
+    text-align: center;
+}
+
+.form-popup .signup,
+.form-popup.show-signup .login {
+    display: none;
+}
+
+.form-popup.show-signup .signup {
+    display: flex;
+}
+
+.signup .policy-text {
+    display: flex;
+    margin-top: 14px;
+    align-items: center;
+}
+
+.signup .policy-text input {
+    width: 14px;
+    height: 14px;
+    margin-right: 7px;
+}
+
+@media (max-width: 950px) {
+    .navbar :is(.hamburger-btn, .close-btn) {
+        display: block;
+}
+
+#COPYRIGHT-text {
+    
+}
+
+footer {
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	padding: 1em 0;
+	position: sticky;
+	bottom: 0;
+	width: 100%;
+}

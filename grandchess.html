@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand-Chess</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better view on smaller screens */
+            min-height: 100vh;
+            background-color: #333; /* Darker background */
+            color: #eee;
+            margin: 0;
+            padding-top: 20px; /* Add some space at the top */
+        }
+        
+        .game-container {
+            text-align: center;
+            background-color: #444; /* Slightly lighter dark background for container */
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid #555;
+        }
+        
+        h1 {
+            color: #efefef;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .controls label {
+            margin-right: 5px;
+            color: #ccc;
+        }
+        .controls select, .controls button {
+            padding: 10px 15px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #666;
+            background-color: #555;
+            color: #eee;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .controls button:hover, .controls select:hover {
+            background-color: #6a6a6a;
+        }
+        
+        .controls button#newGameBtn {
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+        }
+        .controls button#newGameBtn:hover {
+            background-color: #4cae4c;
+        }
+        
+        
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px); /* Slightly smaller squares */
+            grid-template-rows: repeat(8, 50px);
+            width: 400px; /* 8 * 50px */
+            height: 400px; /* 8 * 50px */
+            border: 3px solid #2a2a2a;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px; /* Adjust piece size */
+            cursor: pointer;
+            position: relative; /* For pseudo-elements */
+            transition: background-color 0.1s ease;
+        }
+        
+        .square.light {
+            background-color: #e0c4a0; /* Lighter wood */
+        }
+        
+        .square.dark {
+            background-color: #8b5a2b; /* Darker wood */
+        }
+        
+        .square.selected {
+            background-color: #77dd77 !important; /* A distinct green for selected square */
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+        }
+        
+        .square.valid-move::after {
+            content: '';
+            display: block;
+            width: 16px; /* Smaller dot */
+            height: 16px;
+            border-radius: 50%;
+            background-color: rgba(40, 40, 40, 0.3);
+            position: absolute;
+            /* No need for z-index if piece is textContent */
+        }
+        .square.valid-capture::before { /* Use ::before to avoid conflict with ::after */
+            content: '';
+            display: block;
+            width: 42px; /* Ring around the piece */
+            height: 42px;
+            border-radius: 50%;
+            border: 4px solid rgba(220, 50, 50, 0.4); /* Reddish ring */
+            box-sizing: border-box;
+            position: absolute;
+        }
+        
+        .white-piece {
+            color: #ffffff;
+            text-shadow: 0 0 3px #000, 0 0 3px #000, 0 0 3px #000; /* Softer outline */
+        }
+        .black-piece {
+            color: #1e1e1e;
+            text-shadow: 0 0 2px #aaa, 0 0 2px #aaa;
+        }
+        
+        
+        .game-status {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffc107; /* Amber color for status */
+            min-height: 1.5em; /* Prevent layout shift */
+        }
+        
+        .modal {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: #4f4f4f;
+            padding: 25px 30px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #666;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        .modal-content p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #ddd;
+        }
+        
+        .modal-content button {
+            font-size: 28px; /* Larger piece symbols */
+            margin: 8px;
+            padding: 10px 15px;
+            background-color: #666;
+            color: #eee;
+            border: 1px solid #777;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .modal-content button:hover {
+            background-color: #7a7a7a;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Grand-Chess</h1>
+        <div class="controls">
+            <button id="newGameBtn">New Game</button>
+            <label for="difficulty">Robot Level:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+                <option value="grandmaster">Grandmaster</option>
+            </select>
+            <label for="playerColor">Play as:</label>
+            <select id="playerColor">
+                <option value="white" selected>White</option>
+                <option value="black">Black</option>
+            </select>
+        </div>
+        <div id="chessBoard" class="chess-board">
+            <!-- Squares will be generated by JS -->
+        </div>
+        <div id="gameStatus" class="game-status">White's turn</div>
+        <div id="promotionModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <p>Promote pawn to:</p>
+                <button data-piece="Q">Queen</button>
+                <button data-piece="R">Rook</button>
+                <button data-piece="B">Bishop</button>
+                <button data-piece="N">Knight</button>
+            </div>
+        </div>
+    </div>
+    <script src="chess.js"></script>
+</body>
+</html>

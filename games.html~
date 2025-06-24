@@ -1,0 +1,66 @@
+<div class="img__wrap">
+	<a href="Whack-a-PUCK EXTREME.html"><img class="img__img" src="https://www.shutterstock.com/shutterstock/videos/1031995301/thumb/3.jpg?ip=x480" title="Whack-a-PUCK" style="width:230px;height:160px;"></a>
+  <p class="img__description">Whack-a-PUCK</p>
+</div>
+
+<h1>
+	<span id="textbox">Whack-a-PUCK</span>
+</h1>
+
+<style>
+        #textbox {
+        width: 200px;
+        height: 150px;
+        padding: 10px -10px 10px 10px;
+	color: black;
+	font-size: 15px;
+        border: 3px solid black;
+        margin: 0;
+	text-align: CENTER;
+        }
+
+	/* quick reset */
+	* {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	}
+
+/* relevant styles */
+	.img__wrap {
+	position: absolute;
+	height: 150px;
+	width: 200px;
+	}
+
+	.img__description {
+	position: relative;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: rgba(29, 106, 154, 0.72);
+	color: #fff;
+	visibility: hidden;
+	opacity: 0;
+
+  /* transition effect. not necessary */
+	transition: opacity .2s, visibility .2s;
+	}
+
+	.img__wrap:hover .img__description {
+	visibility: visible;
+	opacity: 1;
+	}	
+</style>
+<!--<div id="whackapuck"><img src="https://www.shutterstock.com/shutterstock/videos/1031995301/thumb/3.jpg?ip=x480"></div>
+
+<style>
+	#whackapuck img {
+	object-fit: cover;
+	}
+</style>-->
+
+<footer>
+    <p style="width:0px;height:200px;">COPYRIGHT &copy; 2024 Hockey Training Academy. All rights reserved.</p>
+</footer>
